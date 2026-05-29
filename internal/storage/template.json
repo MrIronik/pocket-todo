@@ -1,0 +1,29 @@
+{
+    "name":"calculator",
+    "project_path": "~/home",
+    "total_todos": 1,
+    "files": [
+        {"name":"main.c",
+        "path":"~/home/main.c",
+        "number_of_todos": 2,
+            "todo": [
+                {"line": 5,
+                "content": "long message"
+                },
+                {"line": 69,
+                "content": "short message"
+                }
+            ]
+        },
+        {"name":"foo.h",
+        "path":"~/home/foo.h",
+        "number_of_todos": 1,
+            "todo": [
+                {"line": 76,
+                "content": "another thing to do"
+                }
+            ]
+
+        }
+    ]
+}
