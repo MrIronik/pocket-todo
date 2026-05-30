@@ -130,13 +130,19 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// BACKEND TODO: Implement delete functionality
 		case "d":
-			// m.deleteCurrentProject()
+			m.deleteCurrentProject()
+
+		case "x":
+			// m.gotoCurrentProject()
 		}
-	// BACKEND TODO: Implement delete functionality
-	case "x":
-		// m.deleteCurrentProject()
 	}
 	return m, nil
+}
+
+func (m *model) deleteCurrentProject() {
+	storage.DeleteProjectFile(m.projects[m.cursorProject])
+
+	m.projects = loadProjects()
 }
 
 func (m *model) moveUp() {
