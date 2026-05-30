@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"pocket-todo/internal/scanner"
@@ -126,9 +127,8 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// BACKEND TODO: Implement add/delete functionality
 		case "a":
-			// m.addNewProject()
+			m.addNewProject()
 
-		// BACKEND TODO: Implement delete functionality
 		case "d":
 			m.deleteCurrentProject()
 
@@ -139,10 +139,31 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+/* TODO: Move function with controller to different file */
+
+func (m *model) addNewProject() {
+	wd_path, err := filepath.Abs(".")
+	if err != nil {
+		fmt.Println("Error - Someting wrong with paths")
+	}
+
+	project_name := filepath.Base(wd_path)
+	storage.CreateNewProjectFile(project_name, wd_path)
+
+	project := storage.ReadProjectFile(project_name)
+
+	new_data, err := scanner.ScanProject(project.Project_path)
+	storage.SaveProjectFileData(project.Name, new_data)
+
+	m.projects = loadProjects()
+	m.cursorProject = 0
+}
+
 func (m *model) deleteCurrentProject() {
 	storage.DeleteProjectFile(m.projects[m.cursorProject])
 
 	m.projects = loadProjects()
+	m.cursorProject = 0
 }
 
 func (m *model) moveUp() {

@@ -2,12 +2,14 @@ package main
 
 import (
 	"os"
-	"pocket-todo/internal/app"
+	"pocket-todo/internal/storage"
 	"pocket-todo/internal/ui"
 )
 
 func main() {
-	app.Init()
+	storage.Init()
+
+	// TODO: Add arguments hadnling to add new project by the -a <path> flag
 
 	// wd_path, err := filepath.Abs(".")
 	// if err != nil {

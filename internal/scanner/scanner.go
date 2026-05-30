@@ -58,7 +58,10 @@ func isSourceFile(path string) bool {
 		".c":  {},
 		".h":  {},
 		".py": {},
+		".go": {},
 	}
+
+	// TODO: Add other source files types
 
 	file_ext := filepath.Ext(path)
 
@@ -108,6 +111,8 @@ func scanFileForTodos(file_path string) (*storage.File, error) {
 	for scanner.Scan() {
 		line_number++
 		line := scanner.Text()
+
+		// TODO: Refactor function to check all commented files of TODO and add it to Content
 
 		if strings.Contains(line, "TODO: ") {
 			new_todo := storage.Todo{
