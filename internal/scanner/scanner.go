@@ -10,6 +10,8 @@ import (
 	"strings"
 )
 
+/* API */
+
 func ScanProject(project_path string) ([]storage.File, error) {
 	all_project_files_paths, err := scanDirForSourceFiles(project_path)
 	if err != nil {
@@ -31,12 +33,35 @@ func ScanProject(project_path string) ([]storage.File, error) {
 	return all_files, nil
 }
 
+func ScanDataDir() ([]string, error) {
+	data_dir_path := storage.Data_dir_path
+	var data_file_names []string
+
+	temp_file_names, err := os.ReadDir(data_dir_path)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, file := range temp_file_names {
+		if strings.HasSuffix(file.Name(), "_project.json") {
+			clean_name := strings.TrimSuffix(file.Name(), "_project.json")
+			data_file_names = append(data_file_names, clean_name)
+		}
+	}
+	return data_file_names, nil
+}
+
+/* Helper Functions */
+
 func isSourceFile(path string) bool {
 	source_file := map[string]struct{}{
 		".c":  {},
 		".h":  {},
 		".py": {},
+		".go": {},
 	}
+
+	// TODO: Add other source files types
 
 	file_ext := filepath.Ext(path)
 
@@ -86,6 +111,8 @@ func scanFileForTodos(file_path string) (*storage.File, error) {
 	for scanner.Scan() {
 		line_number++
 		line := scanner.Text()
+
+		// TODO: Refactor function to check all commented files of TODO and add it to Content
 
 		if strings.Contains(line, "TODO: ") {
 			new_todo := storage.Todo{

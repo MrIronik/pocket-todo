@@ -27,7 +27,7 @@ type Todo struct {
 }
 
 /* Variables for Data Manager */
-var data_folder_path string
+var Data_dir_path string
 
 func Init() error {
 	err := formatDataFolderPath()
@@ -36,7 +36,7 @@ func Init() error {
 		return err
 	}
 
-	err = os.MkdirAll(data_folder_path, 0755)
+	err = os.MkdirAll(Data_dir_path, 0755)
 	if err != nil {
 		return err
 	}
@@ -74,7 +74,7 @@ func CreateNewProjectFile(project_name string, project_path string) error {
 
 func DeleteProjectFile(data Project) error {
 	file_name := data.Name + "_project.json"
-	project_file_path := filepath.Join(data_folder_path, file_name)
+	project_file_path := filepath.Join(Data_dir_path, file_name)
 
 	err := os.Remove(project_file_path)
 	if err != nil {
@@ -124,7 +124,7 @@ func ReadProjectFile(project_name string) Project {
 	file, err := os.Open(project_file_path)
 	if err != nil {
 		fmt.Println("Error - file not open")
-		panic(err)
+		// TODO: Handle os.Open error correctly
 	}
 	defer file.Close()
 
@@ -154,14 +154,14 @@ func formatDataFolderPath() error {
 		return err
 	}
 
-	data_folder_path = filepath.Join(home_path, data_folder_name)
+	Data_dir_path = filepath.Join(home_path, data_folder_name)
 
 	return nil
 }
 
 func formatProjectFilePath(project_name string) string {
 	file_name := project_name + "_project.json"
-	project_file_path := filepath.Join(data_folder_path, file_name)
+	project_file_path := filepath.Join(Data_dir_path, file_name)
 
 	return project_file_path
 }
