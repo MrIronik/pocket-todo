@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -133,13 +134,36 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.deleteCurrentProject()
 
 		case "x":
-			// m.gotoCurrentProject()
+			m.gotoCurrentProject()
 		}
 	}
 	return m, nil
 }
 
 /* TODO: Move function with controller to different file */
+
+func (m *model) gotoCurrentProject() {
+	_, err := exec.LookPath("code")
+	if err != nil {
+		cmd := exec.Command(
+			"open",
+			m.projects[m.cursorProject].Project_path,
+		)
+
+		cmd.Start()
+	} else {
+		cmd := exec.Command(
+			"code",
+			m.projects[m.cursorProject].Project_path,
+			"-g",
+			fmt.Sprintf("%s:%d",
+				m.files[m.cursorFile].Path,
+				m.todos[m.cursorLine].Line),
+		)
+
+		cmd.Start()
+	}
+}
 
 func (m *model) addNewProject() {
 	wd_path, err := filepath.Abs(".")
