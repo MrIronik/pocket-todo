@@ -7,8 +7,8 @@ import (
 	"pocket-todo/internal/scanner"
 	"pocket-todo/internal/storage"
 
-	"github.com/charmbracelet/lipgloss"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type focusArea int
@@ -241,62 +241,83 @@ func (m *model) View() string {
 }
 
 func (m *model) renderTopSection(height int, columnWidth int) string {
-	projectCol := m.renderProjectColumn(height, columnWidth)
-	fileCol := m.renderFileColumn(height, columnWidth)
-	lineCol := m.renderLineColumn(height, columnWidth)
+	projectCol := m.renderProjectColumn(height-1, columnWidth)
+	fileCol := m.renderFileColumn(height-1, columnWidth)
+	lineCol := m.renderLineColumn(height-1, columnWidth)
 
 	// Combine columns side by side
 	projectLines := strings.Split(projectCol, "\n")
 	fileLines := strings.Split(fileCol, "\n")
 	lineLines := strings.Split(lineCol, "\n")
 
+	displayHeight := height - 1
+
 	// Pad all columns to the same height
-	for len(projectLines) < height {
+	for len(projectLines) < displayHeight {
 		projectLines = append(projectLines, "")
 	}
-	for len(fileLines) < height {
+	for len(fileLines) < displayHeight {
 		fileLines = append(fileLines, "")
 	}
-	for len(lineLines) < height {
+	for len(lineLines) < displayHeight {
 		lineLines = append(lineLines, "")
 	}
 
 	// Trim to exact height to avoid overflow
-	projectLines = projectLines[:height]
-	fileLines = fileLines[:height]
-	lineLines = lineLines[:height]
+	projectLines = projectLines[:displayHeight]
+	fileLines = fileLines[:displayHeight]
+	lineLines = lineLines[:displayHeight]
 
 	result := ""
 	sep := "│"
 
-	for i := 0; i < height; i++ {
+	for i := 0; i < displayHeight; i++ {
 		// Ensure each line is exactly columnWidth
 		p := m.padString(projectLines[i], columnWidth)
 		f := m.padString(fileLines[i], columnWidth)
 		l := m.padString(lineLines[i], columnWidth)
-		
+
 		line := p + " " + sep + " " + f + " " + sep + " " + l
 		result += line + "\n"
 	}
 
-	return strings.TrimSuffix(result, "\n")
+	// Add controls at the bottom
+	controlsStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("239")).
+		Faint(true)
+	controls := controlsStyle.Render("[q]uit [a]dd [x]open [d]el")
+	controlLine := m.padString(controls, m.width)
+	result += controlLine
+
+	return result
 }
 
 func (m *model) renderProjectColumn(height int, width int) string {
 	count := len(m.projects)
 	title := m.renderColumnTitle("Project", focusProject, width, count)
-	
+
 	items := ""
 	for i, project := range m.projects {
 		line := m.renderItem(project.Name, i == m.cursorProject && m.focus == focusProject, width-2)
 		items += line + "\n"
 	}
 
-	// Trim to fit height (subtract 1 for header)
+	// Calculate viewport for scrolling
 	itemLines := strings.Split(strings.TrimSuffix(items, "\n"), "\n")
 	visibleLines := height - 1
+
+	// Calculate scroll position to keep cursor visible
+	startIdx := 0
+	if m.cursorProject >= visibleLines {
+		startIdx = m.cursorProject - visibleLines + 1
+	}
+
 	if len(itemLines) > visibleLines {
-		itemLines = itemLines[:visibleLines]
+		if startIdx+visibleLines <= len(itemLines) {
+			itemLines = itemLines[startIdx : startIdx+visibleLines]
+		} else {
+			itemLines = itemLines[len(itemLines)-visibleLines:]
+		}
 	}
 
 	return title + "\n" + strings.Join(itemLines, "\n")
@@ -305,17 +326,29 @@ func (m *model) renderProjectColumn(height int, width int) string {
 func (m *model) renderFileColumn(height int, width int) string {
 	count := len(m.files)
 	title := m.renderColumnTitle("File", focusFile, width, count)
-	
+
 	items := ""
 	for i, file := range m.files {
 		line := m.renderItem(file.Name, i == m.cursorFile && m.focus == focusFile, width-2)
 		items += line + "\n"
 	}
 
+	// Calculate viewport for scrolling
 	itemLines := strings.Split(strings.TrimSuffix(items, "\n"), "\n")
 	visibleLines := height - 1
+
+	// Calculate scroll position to keep cursor visible
+	startIdx := 0
+	if m.cursorFile >= visibleLines {
+		startIdx = m.cursorFile - visibleLines + 1
+	}
+
 	if len(itemLines) > visibleLines {
-		itemLines = itemLines[:visibleLines]
+		if startIdx+visibleLines <= len(itemLines) {
+			itemLines = itemLines[startIdx : startIdx+visibleLines]
+		} else {
+			itemLines = itemLines[len(itemLines)-visibleLines:]
+		}
 	}
 
 	return title + "\n" + strings.Join(itemLines, "\n")
@@ -324,7 +357,7 @@ func (m *model) renderFileColumn(height int, width int) string {
 func (m *model) renderLineColumn(height int, width int) string {
 	count := len(m.todos)
 	title := m.renderColumnTitle("Line", focusLine, width, count)
-	
+
 	items := ""
 	for i, todo := range m.todos {
 		lineStr := fmt.Sprintf("%d", todo.Line)
@@ -332,10 +365,22 @@ func (m *model) renderLineColumn(height int, width int) string {
 		items += line + "\n"
 	}
 
+	// Calculate viewport for scrolling
 	itemLines := strings.Split(strings.TrimSuffix(items, "\n"), "\n")
 	visibleLines := height - 1
+
+	// Calculate scroll position to keep cursor visible
+	startIdx := 0
+	if m.cursorLine >= visibleLines {
+		startIdx = m.cursorLine - visibleLines + 1
+	}
+
 	if len(itemLines) > visibleLines {
-		itemLines = itemLines[:visibleLines]
+		if startIdx+visibleLines <= len(itemLines) {
+			itemLines = itemLines[startIdx : startIdx+visibleLines]
+		} else {
+			itemLines = itemLines[len(itemLines)-visibleLines:]
+		}
 	}
 
 	return title + "\n" + strings.Join(itemLines, "\n")
@@ -344,12 +389,12 @@ func (m *model) renderLineColumn(height int, width int) string {
 func (m *model) renderColumnTitle(title string, focus focusArea, width int, count int) string {
 	countStr := fmt.Sprintf(" (%d)", count)
 	fullTitle := title + countStr
-	
+
 	if m.focus == focus {
 		return lipgloss.NewStyle().
 			Bold(true).
 			Foreground(lipgloss.Color("51")).
-			Background(lipgloss.Color("16")).
+			Background(lipgloss.Color("243")).
 			Render("► " + fullTitle)
 	}
 	return lipgloss.NewStyle().
@@ -360,8 +405,8 @@ func (m *model) renderColumnTitle(title string, focus focusArea, width int, coun
 func (m *model) renderItem(text string, selected bool, width int) string {
 	if selected {
 		return lipgloss.NewStyle().
-			Background(lipgloss.Color("22")).
-			Foreground(lipgloss.Color("51")).
+			Background(lipgloss.Color("237")).
+			Foreground(lipgloss.Color("15")).
 			Bold(true).
 			Render("> " + m.truncateString(text, width-2))
 	}
@@ -381,13 +426,13 @@ func (m *model) renderBottomSection(height int) string {
 	}
 
 	currentTodo := m.todos[m.cursorLine]
-	
+
 	// Format the header with colors
 	headerStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("226")).
+		Foreground(lipgloss.Color("18")).
 		Bold(true)
 	header := headerStyle.Render(fmt.Sprintf("📝 Line %d", currentTodo.Line))
-	
+
 	// Wrap and truncate content to fit in box
 	contentLines := strings.Split(currentTodo.Content, "\n")
 	maxLines := height - 4
@@ -407,6 +452,14 @@ func (m *model) renderBottomSection(height int) string {
 		Render(header + "\n\n" + content)
 
 	return display
+}
+
+func (m *model) renderFooter() string {
+	keys := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("117")).
+		Render("q-quit  a-add  x-open  d-delete")
+	
+	return keys
 }
 
 func (m *model) padString(s string, width int) string {
