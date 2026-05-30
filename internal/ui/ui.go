@@ -132,6 +132,9 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "d":
 			// m.deleteCurrentProject()
 		}
+	// BACKEND TODO: Implement delete functionality
+	case "x":
+		// m.deleteCurrentProject()
 	}
 	return m, nil
 }
@@ -458,7 +461,7 @@ func (m *model) renderFooter() string {
 	keys := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("117")).
 		Render("q-quit  a-add  x-open  d-delete")
-	
+
 	return keys
 }
 
