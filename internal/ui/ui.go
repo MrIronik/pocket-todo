@@ -69,7 +69,7 @@ func loadProjects() []storage.Project {
 	return projects
 }
 
-// BACKEND TODO: Implement dynamic file loading when project changes
+// TODO: Implement dynamic file loading when project changes
 func (m *model) loadFilesForProject() {
 	if len(m.projects) == 0 {
 		m.files = []storage.File{}
@@ -80,7 +80,7 @@ func (m *model) loadFilesForProject() {
 	m.loadTodosForFile()
 }
 
-// BACKEND TODO: Implement dynamic todos loading when file changes
+// TODO: Implement dynamic todos loading when file changes
 func (m *model) loadTodosForFile() {
 	if len(m.files) == 0 {
 		m.todos = []storage.Todo{}
@@ -126,7 +126,6 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "right":
 			m.moveFocusRight()
 
-		// BACKEND TODO: Implement add/delete functionality
 		case "a":
 			m.addNewProject()
 
@@ -165,6 +164,7 @@ func (m *model) gotoCurrentProject() {
 	}
 }
 
+/* Add / Delate functions */
 func (m *model) addNewProject() {
 	wd_path, err := filepath.Abs(".")
 	if err != nil {
@@ -552,6 +552,9 @@ func (m *model) truncateString(s string, maxLen int) string {
 
 func Run() {
 	m := initialModel()
+	m.loadFilesForProject()
+	m.loadTodosForFile()
+
 	p := tea.NewProgram(&m, tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		fmt.Println("Error running program:", err)
