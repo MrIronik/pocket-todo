@@ -10,6 +10,7 @@ import (
 	"strings"
 )
 
+// TODO: Add mode where you check the current file without saveing json data
 func FlagParse() Flags {
 	var flg Flags
 
