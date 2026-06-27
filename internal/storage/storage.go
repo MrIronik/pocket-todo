@@ -44,6 +44,7 @@ func Init() error {
 	return nil
 }
 
+// TODO: Simpify function, strip path and take name of the project from it
 func CreateNewProjectFile(project_name string, project_path string) error {
 	project_file_path := formatProjectFilePath(project_name)
 
