@@ -358,7 +358,7 @@ func (m *model) renderProjectColumn(height int, width int) string {
 
 	// Calculate viewport for scrolling
 	itemLines := strings.Split(strings.TrimSuffix(items, "\n"), "\n")
-	visibleLines := height - 1
+	visibleLines := height - 2
 
 	// Calculate scroll position to keep cursor visible
 	startIdx := 0
@@ -374,7 +374,7 @@ func (m *model) renderProjectColumn(height int, width int) string {
 		}
 	}
 
-	return title + "\n" + strings.Join(itemLines, "\n")
+	return title + "\n" + m.renderColumnSeparator(width) + "\n" + strings.Join(itemLines, "\n")
 }
 
 func (m *model) renderFileColumn(height int, width int) string {
@@ -389,7 +389,7 @@ func (m *model) renderFileColumn(height int, width int) string {
 
 	// Calculate viewport for scrolling
 	itemLines := strings.Split(strings.TrimSuffix(items, "\n"), "\n")
-	visibleLines := height - 1
+	visibleLines := height - 2
 
 	// Calculate scroll position to keep cursor visible
 	startIdx := 0
@@ -405,7 +405,7 @@ func (m *model) renderFileColumn(height int, width int) string {
 		}
 	}
 
-	return title + "\n" + strings.Join(itemLines, "\n")
+	return title + "\n" + m.renderColumnSeparator(width) + "\n" + strings.Join(itemLines, "\n")
 }
 
 func (m *model) renderLineColumn(height int, width int) string {
@@ -421,7 +421,7 @@ func (m *model) renderLineColumn(height int, width int) string {
 
 	// Calculate viewport for scrolling
 	itemLines := strings.Split(strings.TrimSuffix(items, "\n"), "\n")
-	visibleLines := height - 1
+	visibleLines := height - 2
 
 	// Calculate scroll position to keep cursor visible
 	startIdx := 0
@@ -437,7 +437,7 @@ func (m *model) renderLineColumn(height int, width int) string {
 		}
 	}
 
-	return title + "\n" + strings.Join(itemLines, "\n")
+	return title + "\n" + m.renderColumnSeparator(width) + "\n" + strings.Join(itemLines, "\n")
 }
 
 func (m *model) renderColumnTitle(title string, focus focusArea, width int, count int) string {
@@ -447,22 +447,31 @@ func (m *model) renderColumnTitle(title string, focus focusArea, width int, coun
 	if m.focus == focus {
 		return lipgloss.NewStyle().
 			Bold(true).
-			Foreground(lipgloss.Color("51")).
-			Background(lipgloss.Color("243")).
-			Render("► " + fullTitle)
+			Foreground(lipgloss.Color("15")).
+			Background(lipgloss.Color("19")).
+			Width(width).
+			Align(lipgloss.Center).
+			Render(fullTitle)
 	}
 	return lipgloss.NewStyle().
-		Foreground(lipgloss.Color("117")).
-		Render("  " + fullTitle)
+		Foreground(lipgloss.Color("111")).
+		Width(width).
+		Align(lipgloss.Center).
+		Render(fullTitle)
+}
+
+func (m *model) renderColumnSeparator(width int) string {
+	return lipgloss.NewStyle().
+		Foreground(lipgloss.Color("238")).
+		Render(strings.Repeat("─", width))
 }
 
 func (m *model) renderItem(text string, selected bool, width int) string {
 	if selected {
 		return lipgloss.NewStyle().
-			Background(lipgloss.Color("237")).
-			Foreground(lipgloss.Color("15")).
+			Foreground(lipgloss.Color("226")).
 			Bold(true).
-			Render("> " + m.truncateString(text, width-2))
+			Render("  " + m.truncateString(text, width-2))
 	}
 	return lipgloss.NewStyle().
 		Foreground(lipgloss.Color("247")).
